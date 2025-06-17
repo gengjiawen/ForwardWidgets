@@ -1,7 +1,7 @@
 // 豆瓣片单组件
 WidgetMetadata = {
   id: "douban",
-  title: "豆瓣",
+  title: "豆瓣Max",
   modules: [
     {
       title: "片单",
