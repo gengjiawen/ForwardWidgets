@@ -301,10 +301,10 @@ WidgetMetadata = {
       ],
     },
   ],
-  version: "1.0.0",
+  version: "1.1.4",
   requiredVersion: "0.0.1",
   description: "解析豆瓣片单，获取视频信息",
-  author: "pack1r",
+  author: "pack1r,gengjiawen",
   site: "https://github.com/pack1r/ForwardWidgets"
 };
 // 解析豆瓣片单
@@ -340,18 +340,20 @@ async function loadDefaultList(params = {}) {
     throw new Error("无法获取片单 ID");
   }
 
-  const start = params.start || 0;
-  const limit = params.limit || 60;
+  // 将参数显式转换为数字，避免字符串相加导致如 025 的情况
+  const start = Number(params.start ?? 0);
+  const limit = Number(params.limit ?? 60);
 
   // 如果请求数量超过单页最大值 25，则并行分段请求
   const maxPerPage = 25;
+  console.debug(`start ${start} limit ${limit} maxPerPage ${maxPerPage}`)
   if (limit > maxPerPage) {
     const pages = Math.ceil(limit / maxPerPage);
     const tasks = Array.from({ length: pages }, (_, i) => (async () => {
       const pageStart = start + i * maxPerPage;
-      const pageLimit = i === pages - 1 ? limit - maxPerPage * (pages - 1) : maxPerPage;
-      const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${pageStart}&limit=${pageLimit}`;
-      console.debug(pageUrl)
+      // 构建分页 URL，仅保留 start 查询参数
+      const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${pageStart}`;
+      console.debug(`start`, pageUrl)
       const resp = await Widget.http.get(pageUrl, {
         headers: {
           Referer: `https://movie.douban.com/explore`,
@@ -370,12 +372,14 @@ async function loadDefaultList(params = {}) {
       return ids;
     })());
     const results = await Promise.all(tasks);
-    console.debug(`movies ${results.flat().length}`)
-    return results.flat();
+    const final_movies = results.flat();
+    console.debug(`movies ${final_movies.length}`)
+    console.debug(`movies list ${final_movies.map(item => JSON.stringify(item)).join(',')}`)
+    return final_movies;
   }
 
   // 构建片单页面 URL
-  const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${start}&limit=${limit}`;
+  const pageUrl = `https://www.douban.com/doulist/${listId}/`;
 
   console.log("请求片单页面:", pageUrl);
   // 发送请求获取片单页面
@@ -450,8 +454,9 @@ async function loadSubjectCollection(params = {}) {
     throw new Error("无法获取合集 ID");
   }
 
-  const start = params.start || 0;
-  const limit = params.limit || 20;
+  // 将参数显式转换为数字，避免字符串相加导致如 025 的情况
+  const start = Number(params.start ?? 0);
+  const limit = Number(params.limit ?? 20);
   let pageUrl = `https://m.douban.com/rexxar/api/v2/subject_collection/${listId}/items?start=${start}&count=${limit}&updated_at&items_only=1&type_tag&for_mobile=1`;
   if (params.type) {
     pageUrl += `&type=${params.type}`;
