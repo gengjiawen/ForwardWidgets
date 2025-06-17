@@ -341,8 +341,38 @@ async function loadDefaultList(params = {}) {
   }
 
   const start = params.start || 0;
-  const limit = params.limit || 20;
-  //        // 构建片单页面 URL
+  const limit = params.limit || 60;
+
+  // 如果请求数量超过单页最大值 25，则并行分段请求
+  const maxPerPage = 25;
+  if (limit > maxPerPage) {
+    const pages = Math.ceil(limit / maxPerPage);
+    const tasks = Array.from({ length: pages }, (_, i) => (async () => {
+      const pageStart = start + i * maxPerPage;
+      const pageLimit = i === pages - 1 ? limit - maxPerPage * (pages - 1) : maxPerPage;
+      const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${pageStart}&limit=${pageLimit}`;
+      const resp = await Widget.http.get(pageUrl, {
+        headers: {
+          Referer: `https://movie.douban.com/explore`,
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        },
+      });
+      const doc = Widget.dom.parse(resp.data);
+      const elIds = Widget.dom.select(doc, ".doulist-item .title a");
+      const ids = [];
+      for (const itemId of elIds) {
+        const link = await Widget.dom.attr(itemId, "href");
+        const id = link.match(/subject\/(\d+)/)?.[1];
+        if (id) ids.push({ id, type: "douban" });
+      }
+      return ids;
+    })());
+    const results = await Promise.all(tasks);
+    return results.flat();
+  }
+
+  // 构建片单页面 URL
   const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${start}&limit=${limit}`;
 
   console.log("请求片单页面:", pageUrl);
