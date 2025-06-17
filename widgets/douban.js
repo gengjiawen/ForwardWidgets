@@ -59,7 +59,7 @@ WidgetMetadata = {
           name: "limit",
           title: "每页数量",
           type: "constant",
-          value: "20",
+          value: "60",
         },
       ],
     },
@@ -108,7 +108,7 @@ WidgetMetadata = {
           name: "limit",
           title: "每页数量",
           type: "constant",
-          value: "20",
+          value: "60",
         },
         {
           name: "url",
@@ -351,6 +351,7 @@ async function loadDefaultList(params = {}) {
       const pageStart = start + i * maxPerPage;
       const pageLimit = i === pages - 1 ? limit - maxPerPage * (pages - 1) : maxPerPage;
       const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${pageStart}&limit=${pageLimit}`;
+      console.debug(pageUrl)
       const resp = await Widget.http.get(pageUrl, {
         headers: {
           Referer: `https://movie.douban.com/explore`,
@@ -369,6 +370,7 @@ async function loadDefaultList(params = {}) {
       return ids;
     })());
     const results = await Promise.all(tasks);
+    console.debug(`movies ${results.flat().length}`)
     return results.flat();
   }
 
