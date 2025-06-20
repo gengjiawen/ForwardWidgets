@@ -53,13 +53,20 @@ WidgetMetadata = {
         {
           name: "start",
           title: "开始",
-          type: "count",
+          type: "offset",
+        },
+        {
+          name: "page",
+          title: "页码",
+          type: "page",
+          value: "0",
+          startPage: 0,
         },
         {
           name: "limit",
           title: "每页数量",
           type: "constant",
-          value: "60",
+          value: "20",
         },
       ],
     },
@@ -71,7 +78,7 @@ WidgetMetadata = {
         {
           name: "start",
           title: "开始",
-          type: "count",
+          type: "offset",
         },
         {
           name: "limit",
@@ -102,7 +109,7 @@ WidgetMetadata = {
         {
           name: "start",
           title: "开始",
-          type: "count",
+          type: "offset",
         },
         {
           name: "limit",
@@ -191,7 +198,7 @@ WidgetMetadata = {
         {
           name: "start",
           title: "开始",
-          type: "count",
+          type: "offset",
         },
         {
           name: "limit",
@@ -290,7 +297,7 @@ WidgetMetadata = {
         {
           name: "start",
           title: "开始",
-          type: "count",
+          type: "offset",
         },
         {
           name: "limit",
@@ -301,7 +308,7 @@ WidgetMetadata = {
       ],
     },
   ],
-  version: "1.1.4",
+  version: "1.1.5",
   requiredVersion: "0.0.1",
   description: "解析豆瓣片单，获取视频信息",
   author: "pack1r,gengjiawen",
@@ -341,12 +348,12 @@ async function loadDefaultList(params = {}) {
   }
 
   // 将参数显式转换为数字，避免字符串相加导致如 025 的情况
-  const start = Number(params.start ?? 0);
+  const start = Number(params.page ?? 0);
   const limit = Number(params.limit ?? 60);
 
   // 如果请求数量超过单页最大值 25，则并行分段请求
   const maxPerPage = 25;
-  console.debug(`start ${start} limit ${limit} maxPerPage ${maxPerPage}`)
+  console.debug(`params ${JSON.stringify(params)}`)
   if (limit > maxPerPage) {
     const pages = Math.ceil(limit / maxPerPage);
     const tasks = Array.from({ length: pages }, (_, i) => (async () => {
@@ -379,7 +386,9 @@ async function loadDefaultList(params = {}) {
   }
 
   // 构建片单页面 URL
-  const pageUrl = `https://www.douban.com/doulist/${listId}/`;
+
+  const pageStart = Number(params.page ?? 0) * maxPerPage;
+  const pageUrl = `https://www.douban.com/doulist/${listId}/?start=${pageStart}`;
 
   console.log("请求片单页面:", pageUrl);
   // 发送请求获取片单页面
