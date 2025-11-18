@@ -4,6 +4,15 @@
   "icon": "https://github.com/pack1r/ForwardWidgets/raw/main/icon.png",
   "widgets": [
     {
+      "id": "forward.streaming.networks",
+      "title": "流媒体热榜",
+      "description": "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
+      "requiredVersion": "0.0.1",
+      "version": "2025.11.18",
+      "author": "gengjiawen",
+      "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/network.js"
+    },
+    {
       "id": "douban",
       "title": "豆瓣",
       "description": "解析豆瓣片单，获取视频信息",
@@ -29,15 +38,6 @@
       "version": "1.3.1",
       "author": "阿米诺斯",
       "url": "https://raw.githubusercontent.com/pack1r/ForwardWidgets/refs/heads/main/widgets/combined.js"
-    },
-    {
-      "id": "forward.streaming.networks",
-      "title": "流媒体热榜",
-      "description": "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
-      "requiredVersion": "0.0.1",
-      "version": "2025.11.18",
-      "author": "gengjiawen",
-      "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/network.js"
     }
   ]
 }
