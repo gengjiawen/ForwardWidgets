@@ -1,23 +1,31 @@
 // =============UserScript=============
 // @name         流媒体平台热门榜单
 // @version      1.0.0
-// @description  Netflix、Apple TV+、HBO 热门剧集榜单
+// @description  Netflix、Apple TV+、HBO、爱优腾 热门剧集榜单
 // @author       gengjiawen
 // =============UserScript=============
 
 WidgetMetadata = {
   id: "forward.streaming.networks",
   title: "流媒体热榜",
-  description: "Netflix、Apple TV+、HBO 热门剧集",
+  description: "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
   author: "gengjiawen",
   version: "2025.11.18",
   requiredVersion: "0.0.1",
   modules: [
     {
-      title: "平台热门榜单",
-      description: "Netflix、Apple TV+、HBO 各 4 部混合显示",
+      title: "国际平台热门榜单",
+      description: "Netflix、Apple TV+、HBO 热门剧集",
       requiresWebView: false,
       functionName: "loadAllNetworksTop4",
+      cacheDuration: 3600,
+      params: []
+    },
+    {
+      title: "国内平台热门榜单",
+      description: "爱奇艺、优酷、腾讯视频 热门剧集",
+      requiresWebView: false,
+      functionName: "loadChinaNetworksTop4",
       cacheDuration: 3600,
       params: []
     }
@@ -120,5 +128,31 @@ async function loadAllNetworksTop4() {
     }
 
     console.log(`mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
+    return mixed;
+}
+
+// 国内平台混合榜单（爱优腾）
+async function loadChinaNetworksTop4() {
+    const [iqiyiTop15, youkuTop15, tencentTop15] = await Promise.all([
+        fetchNetworkTop(1330, "爱奇艺"),
+        fetchNetworkTop(1419, "优酷"),
+        fetchNetworkTop(2007, "腾讯视频")
+    ]);
+
+    // 从每个平台的最热门15个中随机选择 4 个
+    const iqiyiItems = getRandomItems(iqiyiTop15, 4);
+    const youkuItems = getRandomItems(youkuTop15, 4);
+    const tencentItems = getRandomItems(tencentTop15, 4);
+
+    // 交替混合显示：爱奇艺, 优酷, 腾讯视频, 爱奇艺, 优酷, 腾讯视频...
+    const mixed = [];
+    const maxLength = Math.max(iqiyiItems.length, youkuItems.length, tencentItems.length);
+
+    for (let i = 0; i < maxLength; i++) {
+        if (iqiyiItems[i]) mixed.push(iqiyiItems[i]);
+        if (youkuItems[i]) mixed.push(youkuItems[i]);
+        if (tencentItems[i]) mixed.push(tencentItems[i]);
+    }
+
     return mixed;
 }
