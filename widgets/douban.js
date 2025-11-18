@@ -48,6 +48,11 @@ WidgetMetadata = {
               value:
                 "https://m.douban.com/subject_collection/EC7I7ZDRA?type=rank",
             },
+            {
+              title: "jw collection",
+              value:
+                "https://www.douban.com/doulist/161554918",
+            },
           ],
         },
         {
