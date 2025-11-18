@@ -33,7 +33,7 @@
     {
       "id": "forward.streaming.networks",
       "title": "流媒体热榜",
-      "description": "Netflix、Apple TV+、HBO Max 热门剧集",
+      "description": "Netflix、Apple TV+、HBO 热门剧集",
       "requiredVersion": "0.0.1",
       "version": "2025.11.18",
       "author": "gengjiawen",
