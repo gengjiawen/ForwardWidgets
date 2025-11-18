@@ -19,6 +19,11 @@ WidgetMetadata = {
               value: "https://m.douban.com/subject_collection/movie_top250",
             },
             {
+              title: "jw collection",
+              value:
+                "https://www.douban.com/doulist/161554918",
+            },
+            {
               title: "一周电影口碑榜",
               value:
                 "https://m.douban.com/subject_collection/movie_weekly_best",
@@ -47,11 +52,6 @@ WidgetMetadata = {
               title: "第97届奥斯卡",
               value:
                 "https://m.douban.com/subject_collection/EC7I7ZDRA?type=rank",
-            },
-            {
-              title: "jw collection",
-              value:
-                "https://www.douban.com/doulist/161554918",
             },
           ],
         },
