@@ -10,7 +10,7 @@ WidgetMetadata = {
   title: "流媒体热榜",
   description: "Netflix、Apple TV+、HBO Max 热门剧集",
   author: "gengjiawen",
-  version: "1.0.0",
+  version: "2025.11.18",
   requiredVersion: "0.0.1",
   modules: [
     {
@@ -93,8 +93,8 @@ async function fetchNetworkTop4(networkId, networkName) {
 // 混合显示所有平台
 async function loadAllNetworksTop4(params = {}) {
     const [netflixItems, appleTVItems, hboMaxItems] = await Promise.all([
-        fetchNetworkTop4(213, "Netflix"),
         fetchNetworkTop4(2552, "Apple TV+"),
+        fetchNetworkTop4(213, "Netflix"),
         fetchNetworkTop4(3186, "HBO Max")
     ]);
 
@@ -102,11 +102,11 @@ async function loadAllNetworksTop4(params = {}) {
     const maxLength = Math.max(netflixItems.length, appleTVItems.length, hboMaxItems.length);
 
     for (let i = 0; i < maxLength; i++) {
-        if (netflixItems[i]) mixed.push(netflixItems[i]);
         if (appleTVItems[i]) mixed.push(appleTVItems[i]);
+        if (netflixItems[i]) mixed.push(netflixItems[i]);
         if (hboMaxItems[i]) mixed.push(hboMaxItems[i]);
     }
 
-    console.log(`mixed ${mixed.map(item => JSON.stringify(item)).join(',')}`);
+    console.log(`mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
     return mixed;
 }
