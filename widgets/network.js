@@ -11,7 +11,7 @@ WidgetMetadata = {
   description: "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
   author: "gengjiawen",
   cacheDuration: 3600,
-  version: "2025.11.19",
+  version: "2025.11.19.2",
   requiredVersion: "0.0.1",
   modules: [
     {
@@ -35,6 +35,7 @@ WidgetMetadata = {
 
 // 辅助函数：获取 TMDB 类型标题
 let tmdbGenresCache = null;
+let keywordsCache = {}; 
 
 async function fetchTmdbGenres() {
     if (tmdbGenresCache) return tmdbGenresCache;
@@ -94,13 +95,18 @@ async function fetchNetworkTop(networkId, networkName) {
             const genreIds = item.genre_ids || [];
             const genreTitle = getTmdbGenreTitles(genreIds, 'tv');
 
-            // 获取 keywords
+            // 获取 keywords（从缓存或 API）
             let keywords = [];
-            try {
-                const keywordsResponse = await Widget.tmdb.get(`/tv/${item.id}/keywords`);
-                keywords = keywordsResponse.results || [];
-            } catch (error) {
-                console.log(`Failed to fetch keywords for TV ${item.id}: ${error}`);
+            if (keywordsCache[item.id]) {
+                keywords = keywordsCache[item.id];
+            } else {
+                try {
+                    const keywordsResponse = await Widget.tmdb.get(`/tv/${item.id}/keywords`);
+                    keywords = keywordsResponse.results || [];
+                    keywordsCache[item.id] = keywords;
+                } catch (error) {
+                    console.log(`Failed to fetch keywords for TV ${item.id}: ${error}`);
+                }
             }
 
             return {
@@ -115,7 +121,7 @@ async function fetchNetworkTop(networkId, networkName) {
                 mediaType: "tv",
                 genreTitle: genreTitle || networkName,
                 networkName: networkName,
-                keywords: keywords.map(kw => kw.name).join('•') // 关键词用 • 分隔
+                keywords: keywords.map(kw => kw.name).join('•') 
             };
         })
     );
@@ -146,8 +152,20 @@ async function loadAllNetworksTop4() {
         if (hboItems[i]) mixed.push(hboItems[i]);
     }
 
-    console.log(`international mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
-    return mixed;
+    // 过滤掉包含恐怖元素的内容
+    const filtered = mixed.filter(item => {
+        const keywords = (item.keywords || '').toLowerCase();
+        const hasHorror = keywords.includes('horror');
+
+        if (hasHorror) {
+            console.log(`Filtered out horror content: ${item.title}`);
+        }
+
+        return !hasHorror;
+    });
+
+    console.log(`international mixed ${filtered.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
+    return filtered;
 }
 
 // 国内平台混合榜单（爱优腾）
