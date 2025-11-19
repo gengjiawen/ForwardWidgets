@@ -10,6 +10,7 @@ WidgetMetadata = {
   title: "流媒体热榜",
   description: "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
   author: "gengjiawen",
+  cacheDuration: 3600,
   version: "2025.11.18",
   requiredVersion: "0.0.1",
   modules: [
@@ -80,13 +81,27 @@ async function fetchNetworkTop(networkId, networkName) {
     });
 
     // 取前 15 个
-    const results = response.results.slice(0, 15); 
+    const results = response.results.slice(0, 15);
 
-    return results
-        .filter(item => item.poster_path && item.id && item.name && item.name.trim().length > 0)
-        .map(item => {
+    // 过滤基本数据
+    const filteredResults = results.filter(item =>
+        item.poster_path && item.id && item.name && item.name.trim().length > 0
+    );
+
+    // 为每个剧集获取 keywords
+    const itemsWithKeywords = await Promise.all(
+        filteredResults.map(async (item) => {
             const genreIds = item.genre_ids || [];
             const genreTitle = getTmdbGenreTitles(genreIds, 'tv');
+
+            // 获取 keywords
+            let keywords = [];
+            try {
+                const keywordsResponse = await Widget.tmdb.get(`/tv/${item.id}/keywords`);
+                keywords = keywordsResponse.results || [];
+            } catch (error) {
+                console.log(`Failed to fetch keywords for TV ${item.id}: ${error}`);
+            }
 
             return {
                 id: String(item.id),
@@ -99,9 +114,13 @@ async function fetchNetworkTop(networkId, networkName) {
                 rating: item.vote_average ? item.vote_average.toFixed(1) : "0",
                 mediaType: "tv",
                 genreTitle: genreTitle || networkName,
-                networkName: networkName
+                networkName: networkName,
+                keywords: keywords.map(kw => kw.name).join('•') // 关键词用 • 分隔
             };
-        });
+        })
+    );
+
+    return itemsWithKeywords;
 }
 
 
@@ -127,7 +146,7 @@ async function loadAllNetworksTop4() {
         if (hboItems[i]) mixed.push(hboItems[i]);
     }
 
-    console.log(`mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
+    console.log(`international mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
     return mixed;
 }
 
@@ -154,5 +173,6 @@ async function loadChinaNetworksTop4() {
         if (tencentItems[i]) mixed.push(tencentItems[i]);
     }
 
+    console.log(`china mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
     return mixed;
 }
