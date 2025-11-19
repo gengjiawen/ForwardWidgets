@@ -11,7 +11,7 @@ WidgetMetadata = {
   description: "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
   author: "gengjiawen",
   cacheDuration: 3600,
-  version: "2025.11.18",
+  version: "2025.11.19",
   requiredVersion: "0.0.1",
   modules: [
     {
