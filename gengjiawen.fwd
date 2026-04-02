@@ -28,7 +28,7 @@
       "requiredVersion": "0.0.1",
       "version": "1.0.0",
       "author": "pack1r",
-      "url": "https://raw.githubusercontent.com/pack1r/ForwardWidgets/refs/heads/main/widgets/imdb.js"
+      "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/imdb.js"
     },
     {
       "id": "forward.combined.media.lists",
@@ -37,7 +37,7 @@
       "requiredVersion": "0.0.1",
       "version": "1.3.1",
       "author": "阿米诺斯",
-      "url": "https://raw.githubusercontent.com/pack1r/ForwardWidgets/refs/heads/main/widgets/combined.js"
+      "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/combined.js"
     }
   ]
 }
