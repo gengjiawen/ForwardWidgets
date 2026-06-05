@@ -34,9 +34,14 @@ WidgetMetadata = {
 };
 
 const TOTAL_ITEMS = 12;
-const NETWORK_HOT_ITEMS = 3;
+const NETWORK_HOT_ITEMS = 2; // 只保证前两个是近半年 TMDB 热门剧
 const RECENT_MONTHS = 6;
 const IMDB_TOP_TV_URL = "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/imdb_top250_tv.json";
+const REQUIRED_IMDB_TV_IDS = [
+    "tt0108778", // Friends / 老友记
+    "tt0369179", // Two and a Half Men / 好汉两个半
+    "tt0386676" // The Office / 办公室
+];
 
 // 辅助函数：获取 TMDB 类型标题
 let tmdbGenresCache = null;
@@ -120,6 +125,15 @@ async function fetchImdbTvItems() {
     return imdbTvCache;
 }
 
+function hasRequiredImdbTvItem(items) {
+    const requiredIds = {};
+    REQUIRED_IMDB_TV_IDS.forEach((id) => {
+        requiredIds[id] = true;
+    });
+
+    return items.some((item) => requiredIds[item.id] || requiredIds[item.imdbId]);
+}
+
 async function fillWithRandomImdbTv(items, totalCount) {
     if (items.length >= totalCount) return items.slice(0, totalCount);
 
@@ -130,7 +144,16 @@ async function fillWithRandomImdbTv(items, totalCount) {
 
     const imdbItems = await fetchImdbTvItems();
     const candidates = imdbItems.filter((item) => !existingTitles[String(item.title || '').toLowerCase()]);
-    return items.concat(getRandomItems(candidates, totalCount - items.length));
+    const remainingCount = totalCount - items.length;
+    const requiredCandidates = candidates.filter((item) => REQUIRED_IMDB_TV_IDS.includes(item.id));
+    const requiredPick = hasRequiredImdbTvItem(items) ? [] : getRandomItems(requiredCandidates, 1);
+    const requiredPickIds = {};
+    requiredPick.forEach((item) => {
+        requiredPickIds[item.id] = true;
+    });
+
+    const randomCandidates = candidates.filter((item) => !requiredPickIds[item.id]);
+    return items.concat(requiredPick, getRandomItems(randomCandidates, remainingCount - requiredPick.length));
 }
 
 // 核心函数：从 TMDB 获取指定平台的热门内容
