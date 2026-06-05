@@ -5194,5 +5194,162 @@
       "Sci-Fi"
     ],
     "releaseDate": "2025"
+  },
+  {
+    "id": "tt27613329",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "Étoile",
+    "description": "Manual add • 7.5/10 • 6,205 votes • TV Series • 2025 • Comedy•Drama",
+    "rating": 7.5,
+    "rank": 253,
+    "imdbId": "tt27613329",
+    "titleType": "tvSeries",
+    "originalTitle": "Étoile",
+    "startYear": "2025",
+    "endYear": "2025",
+    "numVotes": 6205,
+    "rankingScore": null,
+    "genreTitle": "Comedy•Drama",
+    "genres": [
+      "Comedy",
+      "Drama"
+    ],
+    "releaseDate": "2025"
+  },
+  {
+    "id": "tt6424870",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "Ming Dynasty 1566",
+    "description": "Manual add • 9.1/10 • 594 votes • TV Series • 2007 • Drama•History",
+    "rating": 9.1,
+    "rank": 254,
+    "imdbId": "tt6424870",
+    "titleType": "tvSeries",
+    "originalTitle": "Da Ming Wang Chao 1566",
+    "startYear": "2007",
+    "endYear": "2007",
+    "numVotes": 594,
+    "rankingScore": null,
+    "genreTitle": "Drama•History",
+    "genres": [
+      "Drama",
+      "History"
+    ],
+    "releaseDate": "2007"
+  },
+  {
+    "id": "tt1841462",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "Towards the Republic",
+    "description": "Manual add • 8.8/10 • 629 votes • TV Series • 2003 • Drama•History",
+    "rating": 8.8,
+    "rank": 255,
+    "imdbId": "tt1841462",
+    "titleType": "tvSeries",
+    "originalTitle": "Zou xiang gong he",
+    "startYear": "2003",
+    "endYear": null,
+    "numVotes": 629,
+    "rankingScore": null,
+    "genreTitle": "Drama•History",
+    "genres": [
+      "Drama",
+      "History"
+    ],
+    "releaseDate": "2003"
+  },
+  {
+    "id": "tt1162595",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "A Dream in Red Mansions",
+    "description": "Manual add • 8.8/10 • 788 votes • TV Series • 1987 • Drama•History•Romance",
+    "rating": 8.8,
+    "rank": 256,
+    "imdbId": "tt1162595",
+    "titleType": "tvSeries",
+    "originalTitle": "Hong lou meng",
+    "startYear": "1987",
+    "endYear": "1987",
+    "numVotes": 788,
+    "rankingScore": null,
+    "genreTitle": "Drama•History•Romance",
+    "genres": [
+      "Drama",
+      "History",
+      "Romance"
+    ],
+    "releaseDate": "1987"
+  },
+  {
+    "id": "tt0108914",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "The Romance of Three Kingdoms",
+    "description": "Manual add • 8.7/10 • 1,188 votes • TV Series • 1995 • Drama•History•War",
+    "rating": 8.7,
+    "rank": 257,
+    "imdbId": "tt0108914",
+    "titleType": "tvSeries",
+    "originalTitle": "San guo yan yi",
+    "startYear": "1995",
+    "endYear": "1995",
+    "numVotes": 1188,
+    "rankingScore": null,
+    "genreTitle": "Drama•History•War",
+    "genres": [
+      "Drama",
+      "History",
+      "War"
+    ],
+    "releaseDate": "1995"
+  },
+  {
+    "id": "tt1388431",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "The Water Margin",
+    "description": "Manual add • 8.0/10 • 580 votes • TV Series • 1997-1998 • Action•Drama•History",
+    "rating": 8,
+    "rank": 258,
+    "imdbId": "tt1388431",
+    "titleType": "tvSeries",
+    "originalTitle": "Shui hu zhuan",
+    "startYear": "1997",
+    "endYear": "1998",
+    "numVotes": 580,
+    "rankingScore": null,
+    "genreTitle": "Action•Drama•History",
+    "genres": [
+      "Action",
+      "Drama",
+      "History"
+    ],
+    "releaseDate": "1997"
+  },
+  {
+    "id": "tt0237123",
+    "type": "imdb",
+    "mediaType": "tv",
+    "title": "Coupling",
+    "description": "Manual add • 8.5/10 • 50,247 votes • TV Series • 2000-2004 • Comedy•Romance",
+    "rating": 8.5,
+    "rank": 259,
+    "imdbId": "tt0237123",
+    "titleType": "tvSeries",
+    "originalTitle": "Coupling",
+    "startYear": "2000",
+    "endYear": "2004",
+    "numVotes": 50247,
+    "rankingScore": null,
+    "genreTitle": "Comedy•Romance",
+    "genres": [
+      "Comedy",
+      "Romance"
+    ],
+    "releaseDate": "2000"
   }
 ]
