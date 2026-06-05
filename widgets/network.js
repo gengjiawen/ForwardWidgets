@@ -1,6 +1,6 @@
 // =============UserScript=============
 // @name         流媒体平台热门榜单
-// @version      1.0.0
+// @version      2026.06.05
 // @description  Netflix、Apple TV+、HBO、爱优腾 热门剧集榜单
 // @author       gengjiawen
 // =============UserScript=============
@@ -11,38 +11,44 @@ WidgetMetadata = {
   description: "Netflix、Apple TV+、HBO、爱优腾 热门剧集",
   author: "gengjiawen",
   cacheDuration: 3600,
-  version: "2025.11.19.2",
+  version: "2026.06.05",
   requiredVersion: "0.0.1",
   modules: [
     {
       title: "国际平台热门榜单",
-      description: "Netflix、Apple TV+、HBO 热门剧集",
+      description: "Netflix、Apple TV+、HBO 近半年热门剧集 + IMDb 随机补充",
       requiresWebView: false,
-      functionName: "loadAllNetworksTop4",
+      functionName: "loadAllNetworksTop3WithImdb",
       cacheDuration: 3600,
       params: []
     },
     {
       title: "国内平台热门榜单",
-      description: "爱奇艺、优酷、腾讯视频 热门剧集",
+      description: "爱奇艺、优酷、腾讯视频 近半年热门剧集 + IMDb 随机补充",
       requiresWebView: false,
-      functionName: "loadChinaNetworksTop4",
+      functionName: "loadChinaNetworksTop3WithImdb",
       cacheDuration: 3600,
       params: []
     }
   ]
 };
 
+const TOTAL_ITEMS = 12;
+const NETWORK_HOT_ITEMS = 3;
+const RECENT_MONTHS = 6;
+const IMDB_TOP_TV_URL = "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/imdb_top250_tv.json";
+
 // 辅助函数：获取 TMDB 类型标题
 let tmdbGenresCache = null;
 let keywordsCache = {}; 
+let imdbTvCache = null;
 
 async function fetchTmdbGenres() {
     if (tmdbGenresCache) return tmdbGenresCache;
 
     const [movieGenres, tvGenres] = await Promise.all([
-        Widget.tmdb.get('/genre/movie/list', { params: { language: 'zh-CN' } }),
-        Widget.tmdb.get('/genre/tv/list', { params: { language: 'zh-CN' } })
+        Widget.tmdb.get('genre/movie/list', { params: { language: 'zh-CN' } }),
+        Widget.tmdb.get('genre/tv/list', { params: { language: 'zh-CN' } })
     ]);
 
     tmdbGenresCache = {
@@ -67,22 +73,90 @@ function getRandomItems(array, count) {
     return shuffled.slice(0, count);
 }
 
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getRecentDateRange(months) {
+    const today = new Date();
+    const start = new Date(today);
+    start.setMonth(start.getMonth() - months);
+
+    return {
+        startDate: formatDate(start),
+        endDate: formatDate(today)
+    };
+}
+
+function isRecentRelease(dateString, startDate, endDate) {
+    return Boolean(dateString && dateString >= startDate && dateString <= endDate);
+}
+
+function dedupeById(items) {
+    const seen = {};
+    return items.filter((item) => {
+        const key = `${item.type}:${item.id}`;
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+    });
+}
+
+function hasHorrorKeyword(item) {
+    const keywords = (item.keywords || '').toLowerCase();
+    const genreTitle = (item.genreTitle || '').toLowerCase();
+    return keywords.includes('horror') || genreTitle.includes('恐怖') || genreTitle.includes('horror');
+}
+
+async function fetchImdbTvItems() {
+    if (imdbTvCache) return imdbTvCache;
+
+    const response = await Widget.http.get(IMDB_TOP_TV_URL);
+    const data = typeof response.data === 'string' ? JSON.parse(response.data) : response.data;
+    imdbTvCache = Array.isArray(data) ? data : [];
+    return imdbTvCache;
+}
+
+async function fillWithRandomImdbTv(items, totalCount) {
+    if (items.length >= totalCount) return items.slice(0, totalCount);
+
+    const existingTitles = {};
+    items.forEach((item) => {
+        existingTitles[String(item.title || '').toLowerCase()] = true;
+    });
+
+    const imdbItems = await fetchImdbTvItems();
+    const candidates = imdbItems.filter((item) => !existingTitles[String(item.title || '').toLowerCase()]);
+    return items.concat(getRandomItems(candidates, totalCount - items.length));
+}
+
 // 核心函数：从 TMDB 获取指定平台的热门内容
 async function fetchNetworkTop(networkId, networkName) {
     await fetchTmdbGenres();
+    const { startDate, endDate } = getRecentDateRange(RECENT_MONTHS);
+    const pages = [1, 2, 3];
 
-    const response = await Widget.tmdb.get('/discover/tv', {
-        params: {
-            language: 'zh-CN',
-            with_networks: networkId,
-            sort_by: 'popularity.desc',
-            page: 1,
-            'vote_count.gte': 50 // 至少 50 个投票，过滤掉不知名内容
-        }
-    });
+    const responses = await Promise.all(
+        pages.map(page => Widget.tmdb.get('discover/tv', {
+            params: {
+                language: 'zh-CN',
+                with_networks: networkId,
+                sort_by: 'popularity.desc',
+                page: page,
+                'first_air_date.gte': startDate,
+                'first_air_date.lte': endDate,
+                'vote_count.gte': 50 // 至少 50 个投票，过滤掉不知名内容
+            }
+        }))
+    );
 
-    // 取前 15 个
-    const results = response.results.slice(0, 15);
+    const results = responses
+        .flatMap(response => response.results || [])
+        .filter(item => isRecentRelease(item.first_air_date, startDate, endDate))
+        .slice(0, 20);
 
     // 过滤基本数据
     const filteredResults = results.filter(item =>
@@ -101,7 +175,7 @@ async function fetchNetworkTop(networkId, networkName) {
                 keywords = keywordsCache[item.id];
             } else {
                 try {
-                    const keywordsResponse = await Widget.tmdb.get(`/tv/${item.id}/keywords`);
+                    const keywordsResponse = await Widget.tmdb.get(`tv/${item.id}/keywords`);
                     keywords = keywordsResponse.results || [];
                     keywordsCache[item.id] = keywords;
                 } catch (error) {
@@ -121,6 +195,7 @@ async function fetchNetworkTop(networkId, networkName) {
                 mediaType: "tv",
                 genreTitle: genreTitle || networkName,
                 networkName: networkName,
+                popularity: item.popularity || 0,
                 keywords: keywords.map(kw => kw.name).join('•') 
             };
         })
@@ -129,68 +204,44 @@ async function fetchNetworkTop(networkId, networkName) {
     return itemsWithKeywords;
 }
 
+async function loadNetworkTop3WithImdb(networks, options = {}) {
+    const networkLists = await Promise.all(
+        networks.map(network => fetchNetworkTop(network.id, network.name))
+    );
 
-async function loadAllNetworksTop4() {
-    const [appleTVTop10, netflixTop10, hboTop10] = await Promise.all([
-        fetchNetworkTop(2552, "Apple TV+"),
-        fetchNetworkTop(213, "Netflix"),
-        fetchNetworkTop(49, "HBO")
-    ]);
+    let hotItems = dedupeById(networkLists.flat())
+        .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
 
-    // 从每个平台的最热门15个中随机选择 4 个
-    const appleTVItems = getRandomItems(appleTVTop10, 4);
-    const netflixItems = getRandomItems(netflixTop10, 4);
-    const hboItems = getRandomItems(hboTop10, 4);
-
-    // 交替混合显示：Apple TV+, Netflix, HBO, Apple TV+, Netflix, HBO...
-    const mixed = [];
-    const maxLength = Math.max(appleTVItems.length, netflixItems.length, hboItems.length);
-
-    for (let i = 0; i < maxLength; i++) {
-        if (appleTVItems[i]) mixed.push(appleTVItems[i]);
-        if (netflixItems[i]) mixed.push(netflixItems[i]);
-        if (hboItems[i]) mixed.push(hboItems[i]);
+    if (options.filterHorror) {
+        hotItems = hotItems.filter(item => {
+            const hasHorror = hasHorrorKeyword(item);
+            if (hasHorror) {
+                console.log(`Filtered out horror content: ${item.title}`);
+            }
+            return !hasHorror;
+        });
     }
 
-    // 过滤掉包含恐怖元素的内容
-    const filtered = mixed.filter(item => {
-        const keywords = (item.keywords || '').toLowerCase();
-        const hasHorror = keywords.includes('horror');
+    const networkItems = hotItems.slice(0, NETWORK_HOT_ITEMS);
+    const mixed = await fillWithRandomImdbTv(networkItems, TOTAL_ITEMS);
 
-        if (hasHorror) {
-            console.log(`Filtered out horror content: ${item.title}`);
-        }
+    console.log(`${options.logPrefix || 'network'} mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
+    return mixed;
+}
 
-        return !hasHorror;
-    });
-
-    console.log(`international mixed ${filtered.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
-    return filtered;
+async function loadAllNetworksTop3WithImdb() {
+    return await loadNetworkTop3WithImdb([
+        { id: 2552, name: "Apple TV+" },
+        { id: 213, name: "Netflix" },
+        { id: 49, name: "HBO" }
+    ], { filterHorror: true, logPrefix: "international" });
 }
 
 // 国内平台混合榜单（爱优腾）
-async function loadChinaNetworksTop4() {
-    const [iqiyiTop15, youkuTop15, tencentTop15] = await Promise.all([
-        fetchNetworkTop(1330, "爱奇艺"),
-        fetchNetworkTop(1419, "优酷"),
-        fetchNetworkTop(2007, "腾讯视频")
-    ]);
-
-    // 从每个平台的最热门15个中随机选择 4 个
-    const iqiyiItems = getRandomItems(iqiyiTop15, 4);
-    const youkuItems = getRandomItems(youkuTop15, 4);
-    const tencentItems = getRandomItems(tencentTop15, 4);
-
-    // 交替混合显示：爱奇艺, 优酷, 腾讯视频, 爱奇艺, 优酷, 腾讯视频...
-    const mixed = [];
-    const maxLength = Math.max(iqiyiItems.length, youkuItems.length, tencentItems.length);
-
-    for (let i = 0; i < maxLength; i++) {
-        if (iqiyiItems[i]) mixed.push(iqiyiItems[i]);
-        if (youkuItems[i]) mixed.push(youkuItems[i]);
-        if (tencentItems[i]) mixed.push(tencentItems[i]);
-    }
-
-    console.log(`china mixed ${mixed.map(item => JSON.stringify(item, null, 2)).join('\n')}`);
-    return mixed;
+async function loadChinaNetworksTop3WithImdb() {
+    return await loadNetworkTop3WithImdb([
+        { id: 1330, name: "爱奇艺" },
+        { id: 1419, name: "优酷" },
+        { id: 2007, name: "腾讯视频" }
+    ], { logPrefix: "china" });
 }

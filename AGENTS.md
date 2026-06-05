@@ -20,6 +20,10 @@ node scaffold/create-widget.js --interactive   # or with --id --title --modules 
 ```
 `widgets/demo.js` is the living reference for every module type and the full `VideoItem` model. Read it before writing.
 
+## Versioning
+
+When changing a widget, set its version to today's date in `YYYY.MM.DD` format. Keep all version declarations for that widget in sync: the `WidgetMetadata.version`, any UserScript `@version` header, and the matching entry in `gengjiawen.fwd`.
+
 ## Metadata Skeleton
 
 ```javascript
