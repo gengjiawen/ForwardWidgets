@@ -17,7 +17,7 @@
       "title": "豆瓣",
       "description": "解析豆瓣片单，获取视频信息",
       "requiredVersion": "0.0.1",
-      "version": "2025.11.18",
+      "version": "2026.08.05",
       "author": "pack1r and jw",
       "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/douban.js"
     },
@@ -26,7 +26,7 @@
       "title": "IMDB",
       "description": "IMDB",
       "requiredVersion": "0.0.1",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "pack1r",
       "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/imdb.js"
     },
@@ -35,7 +35,7 @@
       "title": "影视榜单",
       "description": "聚合豆瓣、TMDB、IMDB和Bangumi的影视动画榜单",
       "requiredVersion": "0.0.1",
-      "version": "1.3.1",
+      "version": "1.3.2",
       "author": "阿米诺斯",
       "url": "https://raw.githubusercontent.com/gengjiawen/ForwardWidgets/refs/heads/main/widgets/combined.js"
     }

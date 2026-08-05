@@ -313,7 +313,7 @@ WidgetMetadata = {
       ],
     },
   ],
-  version: "1.1.5",
+  version: "1.1.6",
   requiredVersion: "0.0.1",
   description: "解析豆瓣片单，获取视频信息",
   author: "pack1r,gengjiawen",
@@ -373,14 +373,13 @@ async function loadDefaultList(params = {}) {
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
         },
       });
-      const doc = Widget.dom.parse(resp.data);
-      const elIds = Widget.dom.select(doc, ".doulist-item .title a");
+      const $ = Widget.html.load(resp.data);
       const ids = [];
-      for (const itemId of elIds) {
-        const link = await Widget.dom.attr(itemId, "href");
+      $(".doulist-item .title a").each((_, el) => {
+        const link = $(el).attr("href") || "";
         const id = link.match(/subject\/(\d+)/)?.[1];
         if (id) ids.push({ id, type: "douban" });
-      }
+      });
       return ids;
     })());
     const results = await Promise.all(tasks);
@@ -412,26 +411,26 @@ async function loadDefaultList(params = {}) {
   console.log("片单页面数据长度:", response.data.length);
   console.log("开始解析");
 
-  // 解析 HTML 得到文档 ID
-  const docId = Widget.dom.parse(response.data);
-  if (docId < 0) {
+  // 解析 HTML 得到 cheerio 句柄
+  const $ = Widget.html.load(response.data);
+  if (!$) {
     throw new Error("解析 HTML 失败");
   }
-  console.log("解析成功:", docId);
+  console.log("解析成功");
 
-  //        // 获取所有视频项，得到元素ID数组
-  const videoElementIds = Widget.dom.select(docId, ".doulist-item .title a");
+  // 获取所有视频项
+  const videoElements = $(".doulist-item .title a");
 
-  console.log("items:", videoElementIds);
+  console.log("items:", videoElements.length);
 
   let doubanIds = [];
-  for (const itemId of videoElementIds) {
-    const link = await Widget.dom.attr(itemId, "href");
+  videoElements.each((_, el) => {
+    const link = $(el).attr("href") || "";
     const id = link.match(/subject\/(\d+)/)?.[1];
     if (id) {
       doubanIds.push({ id: id, type: "douban" });
     }
-  }
+  });
 
   return doubanIds;
 }

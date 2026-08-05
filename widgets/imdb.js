@@ -4,7 +4,7 @@ WidgetMetadata = {
   description: "IMDB",
   author: "pack1r",
   site: "https://github.com/pack1r/ForwardWidgets",
-  version: "1.0.0",
+  version: "1.0.1",
   requiredVersion: "0.0.1",
   modules: [
     {
@@ -105,18 +105,17 @@ async function loadCardItems(params = {}) {
       }
     }
   } else {
-    const docId = Widget.dom.parse(response.data);
-    if (docId < 0) {
+    const $ = Widget.html.load(response.data);
+    if (!$) {
       throw new Error("解析 HTML 失败");
     }
-    const videoElementIds = Widget.dom.select(docId, ".ipc-metadata-list-summary-item .ipc-poster a");
-    for (const itemId of videoElementIds) {
-      const link = await Widget.dom.attr(itemId, "href");
+    $(".ipc-metadata-list-summary-item .ipc-poster a").each((_, el) => {
+      const link = $(el).attr("href") || "";
       const id = link.match(/tt(\d+)/);
       if (id && id[1]) {
         videoIds.push({ id: `tt${id[1]}`, type: "imdb" });
       }
-    }
+    });
   }
 
   console.log(videoIds);

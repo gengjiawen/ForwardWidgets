@@ -10,7 +10,7 @@ WidgetMetadata = {
   description: "聚合豆瓣、TMDB、IMDB和Bangumi的影视动画榜单",
   author: "阿米诺斯",
   site: "https://github.com/quantumultxx/ForwardWidgets",
-  version: "1.3.1",
+  version: "1.3.2",
   requiredVersion: "0.0.1",
   detailCacheDuration: 60,
   modules: [
@@ -1986,18 +1986,16 @@ async function loadEnhancedDefaultList(params = {}) {
         },
     });
 
-    const docId = Widget.dom.parse(response.data);
-    const videoElementIds = Widget.dom.select(docId, ".doulist-item .title a");
+    const $ = Widget.html.load(response.data);
 
     let doubanItems = [];
-    for (const itemId of videoElementIds) {
-        const link = await Widget.dom.attr(itemId, "href");
-        const text = await Widget.dom.text(itemId);
+    $(".doulist-item .title a").each((_, el) => {
+        const text = $(el).text() || "";
         const chineseTitle = text.trim().split(' ')[0];
         if (chineseTitle) {
             doubanItems.push({ title: chineseTitle, type: "multi" });
         }
-    }
+    });
 
     return await fetchImdbItemsForDouban(doubanItems);
 }
@@ -2271,29 +2269,29 @@ async function loadImdbCardItems(params = {}) {
       }
   }
   if (videoIds.length === 0) {
-      const docId = Widget.dom.parse(response.data);
-      if (docId < 0) throw new Error("解析 IMDB HTML 失败");
-      const itemElementIds = Widget.dom.select(docId, "ul.ipc-metadata-list > li, .lister-list > tr");
-      for (const itemId of itemElementIds) {
+      const $ = Widget.html.load(response.data);
+      if (!$) throw new Error("解析 IMDB HTML 失败");
+      $("ul.ipc-metadata-list > li, .lister-list > tr").each((_, item) => {
           try {
-              const linkElementId = Widget.dom.selectFirst(itemId, ".ipc-title__text, .titleColumn a");
+              const $item = $(item);
+              const $titleEl = $item.find(".ipc-title__text, .titleColumn a").first();
               let link = "";
               let title = "";
-              if (linkElementId >= 0) {
-                  const titleText = await Widget.dom.text(linkElementId);
+              if ($titleEl.length) {
+                  const titleText = $titleEl.text();
                   title = titleText ? titleText.replace(/^\d+\.\s*/, '').trim() : "Unknown Title";
-                  const titleLinkElementId = Widget.dom.selectFirst(itemId, "a.ipc-title-link-wrapper, .titleColumn a");
-                   if (titleLinkElementId >= 0) {
-                       link = await Widget.dom.attr(titleLinkElementId, "href");
+                  const $titleLinkEl = $item.find("a.ipc-title-link-wrapper, .titleColumn a").first();
+                   if ($titleLinkEl.length) {
+                       link = $titleLinkEl.attr("href") || "";
                    }
               }
               if (link) {
                   const idMatch = link.match(/(tt\d+)/);
                   if (idMatch && idMatch[1]) {
                       let coverUrl = "";
-                      const imgElementId = Widget.dom.selectFirst(itemId, ".ipc-poster img, .posterColumn img");
-                      if (imgElementId >= 0) {
-                          coverUrl = await Widget.dom.attr(imgElementId, "src");
+                      const $imgEl = $item.find(".ipc-poster img, .posterColumn img").first();
+                      if ($imgEl.length) {
+                          coverUrl = $imgEl.attr("src") || "";
                           if (coverUrl && coverUrl.startsWith('//')) coverUrl = 'https:' + coverUrl;
                           if (coverUrl) coverUrl = coverUrl.replace(/\/(c|g|s)\//, '/l/');
                       }
@@ -2309,7 +2307,7 @@ async function loadImdbCardItems(params = {}) {
           } catch (parseError) {
               console.error("IMDB 解析错误:", parseError);
           }
-      }
+      });
   }
   const { start, limit } = calculatePagination(params);
   const end = start + limit;
